@@ -20,16 +20,20 @@ module ADC(in_slave, out_slave, out, cs, sclk, reset, clk, write, PM, add, shado
 	output reg dest;
 	begin
 		#1 out_slave <= data_to_send;
-		#3 sclk <= 1;
-		#5 dest <= in_slave; 
-		#6 sclk <= 0;
+		@(out_slave == data_to_send) begin
+			sclk <= 1;
+		end
+		@(posedge sclk) begin
+			dest <= in_slave; 
+			#1 sclk <= 0;
+		end
 	end
 	endtask
 	
 	always @(posedge clk) begin
 		if (reset) begin
 			out_slave <= 0;
-			cs <= 0;
+			cs <= 1;
 			sclk <= 0;
 			write <= 0;
 			out <= 0;
@@ -38,7 +42,6 @@ module ADC(in_slave, out_slave, out, cs, sclk, reset, clk, write, PM, add, shado
 		else begin
 			cs <= 0;
 			#1 sclk <= 0;
-			#2 perform_rw(write, buff);
 		end
 	end
 	
