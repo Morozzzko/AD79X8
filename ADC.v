@@ -27,9 +27,19 @@ module ADC(in_slave, out_slave, out, cs, sclk, reset, clk, write, PM, add, shado
 	endtask
 	
 	always @(posedge clk) begin
-		cs <= 0;
-		#1 sclk <= 0;
-		#2 perform_rw(write, buff);
+		if (reset) begin
+			out_slave <= 0;
+			cs <= 0;
+			sclk <= 0;
+			write <= 0;
+			out <= 0;
+			buff <= 0;
+		end
+		else begin
+			cs <= 0;
+			#1 sclk <= 0;
+			#2 perform_rw(write, buff);
+		else
 	end
 	
 endmodule
