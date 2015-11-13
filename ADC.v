@@ -39,7 +39,7 @@ module ADC(in_slave, out_slave, out, cs, sclk, reset, clk, write, PM, add, shado
 			cs <= 0;
 			#1 sclk <= 0;
 			#2 perform_rw(write, buff);
-		else
+		end
 	end
 	
 endmodule
