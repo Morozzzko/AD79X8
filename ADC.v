@@ -1,48 +1,49 @@
-module ADC(in_slave, out_slave, out, cs, sclk, reset, clk, write, PM, add, shadow, seq);
-`timescale 1 ns / 1 ps
-	parameter DIGITS = 8; // 8 for AD7908
-	input in_slave;
-	input reset;
-	input clk;
-	input [2:0] add;
-	input shadow;
-	input seq;
-	input [1:0] PM;
-	output reg out_slave; 
-	output reg cs;
-	output reg sclk; 
-	output reg write;
-	output reg [DIGITS-1:0] out;
-	reg buff;
+module ADC(d_in, d_out, in, out, sclk, cs, initiate, clk);
+`timescale 100 ps / 1 ps
+
+	// the clk is intended to have the same frequency as sclk
+	// although there must be a phase shift
 	
-	task perform_rw;
-	input data_to_send;
-	output reg dest;
-	begin
-		#1 out_slave <= data_to_send;
-		@(out_slave == data_to_send) begin
-			sclk <= 1;
-		end
-		@(posedge sclk) begin
-			dest <= in_slave; 
-			#1 sclk <= 0;
-		end
-	end
-	endtask
+	input d_in;
+	input [15:0] in;
+	input initiate; // signal to initiate the transaction
+	input clk;
+	
+	output sclk;
+	output d_out;
+	output reg [15:0] out = 16'b0;
+	output reg cs = 1'b1;
+	
+	assign sclk = (~cs) & (~clk) | initiate & cs & clk;
+	
+	reg [3:0] count = 4'b1111;
+	reg [15:0] RgIn = 16'b0;
+	
+	assign d_out = RgIn[15];
 	
 	always @(posedge clk) begin
-		if (reset) begin
-			out_slave <= 0;
-			cs <= 1;
-			sclk <= 0;
-			write <= 0;
-			out <= 0;
-			buff <= 0;
+		if (initiate && cs) begin
+			RgIn <= in;
+			cs <= 1'b0;
 		end
-		else begin
-			cs <= 0;
-			#1 sclk <= 0;
+		else begin 
+			RgIn <= RgIn << 1;
+		end
+		if (count == 4'b0000) begin
+			cs <= 1'b1;
 		end
 	end
+	
+	always @(negedge sclk) begin
+		out[count] <= d_in;
+		if (count == 4'b0000) begin
+			count <= 4'b1111;
+		end
+		else begin
+			count <= count - 1'b1;
+		end
+	end
+	
+	
 	
 endmodule
