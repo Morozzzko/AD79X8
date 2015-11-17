@@ -1,29 +1,33 @@
-module ADC(d_in, d_out, in, out, sclk, cs, initiate, clk);
+module ADC(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk);
 `timescale 100 ps / 1 ps
 
 	// the clk is intended to have the same frequency as sclk
 	// although there must be a phase shift
 	
-	input d_in;
-	input [15:0] in;
+	input serial_in;
+	input [15:0] bus_in;
 	input initiate; // signal to initiate the transaction
 	input clk;
 	
 	output sclk;
-	output d_out;
-	output reg [15:0] out = 16'b0;
+	output serial_out;
+	output reg [15:0] bus_out = 16'b0;
 	output reg cs = 1'b1;
 	
-	assign sclk = (~cs) & (~clk) | initiate & cs & clk;
+	assign sclk = (~cs) & (~clk) | cs;
 	
 	reg [3:0] count = 4'b1111;
 	reg [15:0] RgIn = 16'b0;
 	
-	assign d_out = RgIn[15];
+	assign serial_out = RgIn[15];
+	
+	initial begin
+		bus_out <= 16'b0;
+	end
 	
 	always @(posedge clk) begin
 		if (initiate && cs) begin
-			RgIn <= in;
+			RgIn <= bus_in;
 			cs <= 1'b0;
 		end
 		else begin 
@@ -35,7 +39,7 @@ module ADC(d_in, d_out, in, out, sclk, cs, initiate, clk);
 	end
 	
 	always @(negedge sclk) begin
-		out[count] <= d_in;
+		bus_out[count] <= serial_in;
 		if (count == 4'b0000) begin
 			count <= 4'b1111;
 		end
