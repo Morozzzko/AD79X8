@@ -1,4 +1,4 @@
-module ADC(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk);
+module ADC(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk, ready);
 `timescale 100 ps / 1 ps
 
 	// the clk is intended to have the same frequency as sclk
@@ -9,12 +9,14 @@ module ADC(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk);
 	input initiate; // signal to initiate the transaction
 	input clk;
 	
+	output ready;
 	output sclk;
 	output serial_out;
 	output reg [15:0] bus_out = 16'b0;
 	output reg cs = 1'b1;
 	
 	assign sclk = (~cs) & (~clk) | cs;
+	assign ready = cs;
 	
 	reg [3:0] count = 4'b1111;
 	reg [15:0] RgIn = 16'b0;
