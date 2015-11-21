@@ -1,5 +1,5 @@
 `timescale 100 ps / 1 ps
-module ADC(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk, ready);
+module AD79X8(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk, ready);
     // A simple SPI interface for AD7908/AD7918/AD7928 Analog-to-digital converters 
     input serial_in; // serial input from ADC 
     input [15:0] bus_in; // bus data to be sent to ADC 
