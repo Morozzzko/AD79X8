@@ -18,7 +18,7 @@ module AD79X8(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk, r
     output serial_out; // serial output to ADC 
     output reg [15:0] bus_out = 16'b0; // data read from ADCs
     output reg cs = 1'b1; // chip select for ADC
-	 
+  
     assign ready = cs;
     assign serial_out = RgIn[15];
  
@@ -31,20 +31,19 @@ module AD79X8(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk, r
     // begins when the transaction is initialized
     // goes on while the module is not 'ready'
     always @(posedge clk) begin
-		if (ready && reset) begin
-			clk_counter = 0;
-		end
-		else if (~ready | initiate) begin 
-			clk_counter = clk_counter + 1;
-			if (clk_counter == 1) begin
-				sclk <= 1'b1;
-			end
-			else if (clk_counter == clk_division) begin
-				clk_counter <= 0;
-				sclk <= 1'b0;
-			end
-		end
-    
+        if (ready && reset) begin
+            clk_counter = 0;
+        end
+        else if (~ready || initiate) begin 
+            clk_counter = clk_counter + 1;
+            if (clk_counter == 1) begin
+                sclk <= 1'b1;
+            end
+            else if (clk_counter == clk_division) begin
+                clk_counter <= 0;
+                sclk <= 1'b0;
+            end
+        end
     end
      
     // module to ADC
