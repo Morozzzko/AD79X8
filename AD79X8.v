@@ -14,12 +14,11 @@ module AD79X8(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk, r
     // reset won't work if 'ready' is not active
 
     output ready; // is set to "1" when the conversion is done; or when the 
-    output sclk; // serial clock for the ADCs. active on falling edge
+    output reg sclk = 1'b1; // serial clock for the ADCs. active on falling edge
     output serial_out; // serial output to ADC 
     output reg [15:0] bus_out = 16'b0; // data read from ADCs
     output reg cs = 1'b1; // chip select for ADC
-
-    assign sclk = (~cs) & (~clk) | cs; 
+	 
     assign ready = cs;
     assign serial_out = RgIn[15];
  
@@ -31,15 +30,26 @@ module AD79X8(serial_in, serial_out, bus_in, bus_out, sclk, cs, initiate, clk, r
     // sclk generation 
     // begins when the transaction is initialized
     // goes on while the module is not 'ready'
-    always (@posedge clk) begin
+    always @(posedge clk) begin
+		if (ready && reset) begin
+			clk_counter = 0;
+		end
+		else if (~ready | initiate) begin 
+			clk_counter = clk_counter + 1;
+			if (clk_counter == 1) begin
+				sclk <= 1'b1;
+			end
+			else if (clk_counter == clk_division) begin
+				clk_counter <= 0;
+				sclk <= 1'b0;
+			end
+		end
     
     end
      
     // module to ADC
     always @(posedge clk) begin
         if (reset && ready) begin
-            count <= 4'b1111;
-            bus_out <= 16'b0;
             cs <= 1'b1;
         end
         else begin
