@@ -1,2 +1,48 @@
+`timescale 1 ps / 1 ps;
 module AD79X8_TestBench();
+    parameter test_count = 500;
+    
+    reg reset = 1'b0;
+    reg clk = 1'b0;
+    reg initiate = 1'b0;
+    reg serial_in = 1'b0;
+    reg [15:0] ref_data_from_adc = 16'b0;
+    reg [15:0] ref_data_to_adc = 16'b0;
+    reg [15:0] data_from_adc = 16'b0;
+    reg [15:0] data_to_adc = 16'b0;
+    reg [3:0] SPI_counter = 4'b0;
+    wire ready;
+    wire sclk;
+    wire cs;
+    wire serial_out;
+    wire [15:0] bus_out;
+    
+
+    
+    AD79X8 #(10, 4) adc(
+        .serial_in(serial_in), 
+        .serial_out(serial_out), 
+        .bus_in(ref_data_to_adc), 
+        .bus_out(bus_out), 
+        .sclk(sclk), 
+        .cs(cs), 
+        .initiate(initiate), 
+        .clk(clk), 
+        .ready(ready), 
+        .reset(reset)
+    );
+    
+    always #25 clk = ~clk;
+    
+    
+    always @(posedge clk) begin
+        if (ready) begin
+            ref_data_from_adc = {0, $random};
+            ref_data_to_adc = $random;
+        end
+        else begin
+        end
+    end
+    
+    
 endmodule
